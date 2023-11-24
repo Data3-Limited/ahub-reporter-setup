@@ -266,9 +266,10 @@ process
         Write-Host " - The credentials for application registration the will expire 1 day after creation."
         Write-Host "`r`n Data#3 will use the application registration to deploy the D3AHUB App into your Azure Tenant." -ForegroundColor White
         Write-Host "`r`n The application registration will have the following API permissions:" -ForegroundColor White
-        Write-Host " - Microsoft Graph - AppRoleAssignment.ReadWrite.All (Application)"
-        Write-Host " - Microsoft Graph - Directory.ReadWrite.All (Application)"
-        Write-Host " - Microsoft Graph - RoleManagement.ReadWrite.Directory (Application)"
+        Write-Host " - Microsoft Graph - AppRoleAssignment.ReadWrite.All (Application). This is required to assign API permissions to a Managed Identity for the D3AHUB App."
+        Write-Host " - Microsoft Graph - Directory.Read.All (Application). This permission is necessary to read directory data, including users, groups, and other directory objects."
+        Write-Host " - Microsoft Graph - RoleManagement.ReadWrite.Directory (Application). This is required to assign Roles to the Managed Identity for the D3AHUB App."
+        Write-Host " - Microsoft Graph - User.ManageIdentities.All (Application). This is required to create the Managed Identity for the D3AHUB App."
         Write-Host "`r`n Additionally, the application registration will be assigned the following role(s) on the specified scope:" -ForegroundColor White
         Write-Host " - Role: User Access Administrator - Scope: '/'"
         Write-Host " - Role: Owner - Scope: Designated Subscription"
@@ -367,21 +368,23 @@ process
             {
                 # Common Variables
                 $msGraph        = Get-AzADServicePrincipal -DisplayName "Microsoft Graph"
-                $msGraphUri     = "https://graph.microsoft.com/v1.0/servicePrincipals/$($msGraph.Id)/appRoleAssignedTo"
-                $spnUri         = "https://graph.microsoft.com/v1.0/servicePrincipals/$($spn.id)/appRoleAssignments"
+                $msGraphUri     = ("https://graph.microsoft.com/v1.0/servicePrincipals/{0}/appRoleAssignedTo" -f $msGraph.Id)
+                $spnUri         = ("https://graph.microsoft.com/v1.0/servicePrincipals/{0}/appRoleAssignments" -f $spn.id)
 
                 $roleIds = @{
                     "Application.Read.All"                  = "9a5d68dd-52b0-4cc2-bd40-abcf44ac3a30" # Application
+                    "Application.ReadWrite.All"             = "bdfbf15f-ee85-4955-8675-146e8e5296b5" # Application
                     "AppRoleAssignment.ReadWrite.All"       = "06b708a9-e830-4db3-a914-8e69da51d44f" # Application
                     "Directory.Read.All"                    = "7ab1d382-f21e-4acd-a863-ba3e13f7da61" # Application
                     "Directory.ReadWrite.All"               = "19dbc75e-c2e2-444c-a770-ec69d8559fc7" # Application
                     "Group.ReadWrite.All"                   = "62a82d76-70ea-41e2-9197-370581804d09" # Application
                     "GroupMember.ReadWrite.All"             = "dbaae8cf-10b5-4b86-a4a1-f871c94c6695" # Application
                     "RoleManagement.ReadWrite.Directory"    = "9e3f62cf-ca93-4989-b6ce-bf83c28f9fe8" # Application
+                    "User.ManageIdentities.All"             = "c529cfca-c91b-489c-af2b-d92990b66ce6" # Application
                     "User.Read"                             = "e1fe6dd8-ba31-4d61-89e7-88639da4683d" # Delegated
                 }
 
-                $roles = @( "AppRoleAssignment.ReadWrite.All", "Directory.ReadWrite.All", "RoleManagement.ReadWrite.Directory" )
+                $roles = @( "AppRoleAssignment.ReadWrite.All", "Directory.Read.All", "User.ManageIdentities.All", "RoleManagement.ReadWrite.Directory" )
 
                 Clear-Host
                 Write-Host "`r`n Checking API Permissions on App Registration ....."  -ForegroundColor Yellow
