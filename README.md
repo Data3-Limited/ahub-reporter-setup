@@ -1,124 +1,70 @@
-# Azure Hybrid Use Benefit (AHUB) Reporter App Preparation Script
+# Data#3 Azure Hybrid Use Benefit Reporter App Configuration Script
 
-This script prepares your environment for the Data#3 Azure Hybrid Use Benefit Reporter App (D3AHUB). It automates the creation and configuration of an Entra ID Application Registration with a Service Principal used to deploy the D3AHUB App via Azure DevOps Pipeline.
+## Overview
 
-> **IMPORTANT:**
->
-> The Application Registration created by this script is granted a high level of permissions for the duration of **24 Hours**. This enables the application registration via a pipeline to perform necessary tasks, such as managing user identities, roles, and accessing directory data. It is essential to understand and review these permissions before running the script.
+This PowerShell script is designed to configure the Data#3 Azure Hybrid Use Benefit (AHUB) Reporter App. The script enables the AHUB Managed Application by granting the System Assigned Identity for the App the Role `Reader` at the Tenant Root Management Group.
 
 ## Prerequisites
 
-- PowerShell Core (v7.3)
-- Azure PowerShell Module (Az) v2.12.3 for Az.Accounts and v6.7.0 for Az.Resources (Minimum)
+- **PowerShell Version:** Ensure that PowerShell Core is installed with a minimum version of 7.3.
+- **Modules:** The script requires the following Azure modules:
+  - `Az.Accounts` (Version 2.12.3)
+  - `Az.Resources` (Version 6.7.0)
 
-## Usage
+## Script Parameters
 
-1. Execute the script using PowerShell Core with the required parameters.
+The script accepts the following parameters:
 
-   ```powershell
-   ./Enable-D3Ahub.ps1 `
-       -AppRegistrationName "<AppRegistrationName>" `
-       -SubscriptionId "<SubscriptionId>" `
-       -TenantName "<TenantName>"
-   ```
+- **FunctionAppName:** The name of the Azure Function App associated with the AHUB Reporter App.
+- **SubscriptionId:** The unique identifier for the Azure subscription.
+- **TenantName:** The name of the Azure Active Directory (AD) tenant.
 
-   For example:
+## Usage Instructions
 
-   ``` powershell
-   ./Enable-D3Ahub.ps1 `
-       -AppRegistrationName "D3-AHub-Reporter-App" `
-       -SubscriptionId "ac6b5d5e-7a50-46f3-a49c-283610fe8c73" `
-       -TenantName "contoso.onmicrosoft.com"
-   ```
+1. **Execute the Script:**
+   - Run the script in a PowerShell environment with the required permissions.
+   - Make sure to meet the prerequisites mentioned above.
 
-2. Follow the prompts to log in to Azure and Entra ID.
+2. **Follow On-Screen Prompts:**
+   - The script guides users through the AHUB Reporter App configuration.
+   - Users will be prompted for Azure credentials.
 
-3. The script will perform the following actions:
+3. **Script Outputs:**
+   - The script logs outputs and results for reference.
+   - A transcript file is generated and opened for review at the end of the execution.
 
-   - Check if Management Groups are enabled and enable them if necessary.
-   - Create or retrieve an Entra ID Application Registration and Service Principal.
-   - Display the essential information about the created resources.
-   - Applies API permissions and role assignments to the App Registration.
+4. **Managed Identity Configuration:**
+   - The script configures the Managed Identity for the AHUB Managed Application.
+   - Assigns the "Reader" role to the Managed Identity for the specified scope.
 
-## Parameters
+## Important Notes
 
-### AppRegistrationName
+- **Pre-Deployment Requirement:**
+  - This script must be executed after deploying the AHUB Managed Application into the Azure tenant.
 
-![Parameter Setting](https://img.shields.io/badge/parameter-required-orange?style=flat-square)
+- **Azure Login**
+  - You will be prompted to log in only once. The login credentials are cached for the session duration.
 
-The name of the Entra ID Application Registration used by Azure DevOps (Data#3) to deploy the D3AHUB App via Pipeline
+## Script Output
 
-### SubscriptionId
+Upon completion, the script provides detailed information about the executed tasks, including:
 
-![Parameter Setting](https://img.shields.io/badge/parameter-required-orange?style=flat-square)
-
-The ID of the Azure subscription where the resources will be created.
-
-### TenantName
-
-![Parameter Setting](https://img.shields.io/badge/parameter-required-orange?style=flat-square)
-
-The name of the Entra ID tenant.
-
-## Functions
-
-### `Connect-Account`
-
-This function handles the authentication and connection to Azure and Entra ID. It supports both Azure and Entra ID contexts.
-
-### `Get-InputOption`
-
-A helper function to gather user input, allowing customisation of prompts.
+- Imported Azure context information.
+- Current user account details.
+- Current environment and tenant information.
+- Current subscription details (if applicable).
 
 ## Logging
 
-The script generates a transcript log file (`transcript_<timestamp>.txt`) in the temporary directory. The log contains detailed information about script execution, errors, and created resources.
+The script generates a transcript file (`transcript_<timestamp>.txt`) containing detailed logs. The log file is opened automatically for user review.
 
-## Cleanup
+## Troubleshooting
 
-The script performs cleanup tasks, such as removing expired credentials and providing a summary of executed actions.
-
-## Notes
-
-- The script applies role assignments at the scope `/`. Management Groups need to be enabled to utilise this scope and ensure proper deployment.
-- Generated credentials for the Entra ID Application Registration expire after 24 hours.
-- API permissions and role assignments are required to allow the App Registration to create the App and assign the Management Identity for App, the neccessay permissions to operate.
-
-## API Permissions
-
-The script applies the following API permissions to the Entra ID Application Registration:
-
-- `AppRoleAssignment.ReadWrite.All`: This permission is required to assign and manage app role assignments for the application.
-
-- `Directory.Read.All`: This permission is necessary to read directory data, including users, groups, and other directory objects.
-
-- `User.ManageIdentities.All`: This permission is required to manage user identities, including the creation of managed identities for the D3AHUB App.
-
-- `RoleManagement.ReadWrite.Directory`: This permission is needed to read and write directory roles, allowing the assignment of roles to the managed identity for the D3AHUB App.
-
-These permissions are essential for the proper functioning of the D3AHUB App and its integration with Microsoft Graph.
-
-## Role Assignments
-
-The script applies the following role assignments to the Entra ID Application Registration:
-
-- `User Access Administrator`
-
-   Scope: `/`
-
-   Description: This assignment grants the application registration the ability to read all resources within an Azure Tenant.
-
-- `Owner`
-
-   Scope: `Designated Subscription`
-
-   Description: This assignment gives the application registration owner-level access to the designated subscription. It ensures the Application Registration deploying the D3AHUB App has the necessary privileges to deploy and manage resources within the specified subscription.
-
-These role assignments are crucial for the Application Registration to deploy and configure the D3AHUB App to perform its intended tasks effectively.
+In case of errors or issues, review the generated log file for more information. Ensure that prerequisites are met and that the script is executed with the required permissions.
 
 ## Disclaimer
 
-Please review and understand the script before execution. The script involves creating and configuring Azure resources, and it may have an impact on your Azure environment. Ensure that you have the necessary permissions and take appropriate precautions.
+Please review and understand the script before execution. The script involves configuring Azure resources, and it may have an impact on your Azure environment. Ensure that you have the necessary permissions and take appropriate precautions.
 
 ## Authors
 
