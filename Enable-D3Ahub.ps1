@@ -1,7 +1,5 @@
 #Requires -PSEdition Core
 #Requires -Version 7.3
-<# #Requires -Modules @{ ModuleName="Az.Accounts"; ModuleVersion="2.12.3" }
-#Requires -Modules @{ ModuleName="Az.Resources"; ModuleVersion="6.7.0" } #>
 
 [CmdletBinding()]
 param
@@ -27,7 +25,7 @@ begin
         param 
         (
             [Parameter(Mandatory = $true)]
-            [ValidateSet("Azure", "AzureAD")]
+            [ValidateSet("Azure")]
             [String] $ContextName,
 
             [Parameter(Mandatory = $true)]
@@ -53,11 +51,6 @@ begin
 
         switch ($ContextName)
         {
-            "AzureAD"
-            {
-                $contextFile = Join-Path $env:TEMP "context-azuread-$($tenantName)-$($date).json"
-            }
-
             default
             {
                 $contextFile = Join-Path $env:TEMP "context-azure-$($tenantName)-$($date).json"
@@ -252,13 +245,11 @@ process
 
         Write-Host "`r`n During the execution of this script, you will be prompted to enter the appropriate credentials for:" -ForegroundColor White 
         Write-Host " - Azure related tasks."
-        Write-Host " - Azure AD related tasks."
 
         Write-Host "`r`n PLEASE NOTE:" -ForegroundColor White
         Write-Host " - This script MUST been run after the D3AHUB Managed Application has been deployed into your Azure Tenant." -ForegroundColor White
         Write-Host " - You will only be asked to log in once. Your login will be cached for the duration of the session." -ForegroundColor White
-        Write-Host " - If you have multiple accounts for each type of task, please log in with the appropriate account when prompted." -ForegroundColor White
-
+        
         Write-Host "`r`n The Script will configure the following:" -ForegroundColor White
         Write-Host "`r`n The Managed Identity D3AHUB Managed Application will be assigned the following role(s) on the specified scope:" -ForegroundColor White
         Write-Host " - Role: Reader - Scope: 'Tenant Root Management Group'"
@@ -271,7 +262,7 @@ process
             $true
             {
                 Clear-Host
-                Write-Host "`r`n Checking App Registrations & Service Principals ....." -ForegroundColor Yellow
+                Write-Host "`r`n Checking the Managed Identity Service Principal ....." -ForegroundColor Yellow
 
                 # Log into Azure
                 Write-Host "`r`n Logging into Azure ..... "
