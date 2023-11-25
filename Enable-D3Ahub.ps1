@@ -251,8 +251,9 @@ process
         Write-Host " - You will only be asked to log in once. Your login will be cached for the duration of the session." -ForegroundColor White
         
         Write-Host "`r`n The Script will configure the following:" -ForegroundColor White
-        Write-Host "`r`n The Managed Identity D3AHUB Managed Application will be assigned the following role(s) on the specified scope:" -ForegroundColor White
-        Write-Host " - Role: Reader - Scope: 'Tenant Root Management Group'"
+        Write-Host " - Enable Management Groups if not already enabled." -ForegroundColor White
+        Write-Host " - Assigned the following role(s) to the D3HUB Managed Indentity on the specified scope:" -ForegroundColor White
+        Write-Host "   Role: Reader - Scope: 'Tenant Root Management Group'"
 
         $result = Get-InputOption -Message "Do you want to continue?" -YesOption "Continue" -NoOption "Exit"
 
@@ -268,6 +269,20 @@ process
                 Write-Host "`r`n Logging into Azure ..... "
                 Connect-Account -ContextName "Azure" -TenantName $TenantName -SubscriptionId $SubscriptionId
                 $context = Get-AzContext
+
+                # Checking if Management Groups are enabled
+                Write-Host "`r`n Checking if Management Groups are enabled ....."  -ForegroundColor Yellow
+                $mgs = Get-AzManagementGroup -ErrorAction SilentlyContinue
+
+                if (!$mgs)
+                {
+                    Write-Host " Management Groups are not enabled. Enabling.... "
+                    $mg = New-AzManagementGroup -GroupId "temp_$((new-guid).ToString().substring(0,5))" -DisplayName Temp -ParentId "/providers/Microsoft.Management/managementGroups/$($context.Tenant.Id)"
+                    $mg | Remove-AzManagementGroup
+                    Write-Host " Management Groups are now enabled. Proceeding with configuration."  -ForegroundColor Green
+                }
+                else { Write-Host " Management Groups are already enabled. Proceeding with configuration." -ForegroundColor Green }
+                #endregion
 
                 # Common Variables
                 $functionApp    = Get-AzFunctionApp | Where-Object Name -eq $FunctionAppName -ErrorAction SilentlyContinue

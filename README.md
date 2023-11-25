@@ -25,15 +25,19 @@ The script accepts the following parameters:
    - Run the script in a PowerShell environment with the required permissions.
    - Make sure to meet the prerequisites mentioned above.
 
-2. **Follow On-Screen Prompts:**
+1. **Follow On-Screen Prompts:**
    - The script guides users through the AHUB Reporter App configuration.
    - Users will be prompted for Azure credentials.
 
-3. **Script Outputs:**
+1. **Script Outputs:**
    - The script logs outputs and results for reference.
    - A transcript file is generated and opened for review at the end of the execution.
 
-4. **Managed Identity Configuration:**
+1. **Enable Management Groups:**
+   - The script checks if Management Groups are enabled.
+   - If not, a temporary Management Group is created and deleted to enable Management Groups.
+
+1. **Managed Identity Configuration:**
    - The script configures the Managed Identity for the AHUB Managed Application.
    - Assigns the "Reader" role to the Managed Identity for the specified scope.
 
